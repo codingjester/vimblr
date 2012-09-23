@@ -19,13 +19,11 @@ def oauth_sig(method,uri,params):
     """
     Creates the valid OAuth signature.
     """
-    print "Starting the sig"
     #eg: POST&http%3A%2F%2Fapi.tumblr.com%2Fv2%2Fblog%2Fexample.tumblr.com%2Fpost
     s = method + '&'+ urllib.quote(uri).replace('/','%2F')+ '&' + '%26'.join(
         #escapes all the key parameters, we then strip and url encode these guys
         [urllib.quote(k) +'%3D'+ urllib.quote(params[k]).replace('/','%2F') for k in sorted(params.keys())]
     )
-    print s
     s = s.replace('%257E','~')
     return urllib.quote(base64.encodestring(hmac.new(secret_key + "&"+oauth_token_secret,s,hashlib.sha1).digest()).strip())
 
@@ -33,7 +31,6 @@ def oauth_gen(method,url,iparams,headers):
     """
     Creates the oauth parameters we're going to need to sign the body
     """
-    print "Genning"
     params = dict([(x[0], urllib.quote(str(x[1])).replace('/','%2F')) for x in iparams.iteritems()]) 
     params['oauth_consumer_key'] = consumer_key
     params['oauth_nonce'] = str(time.time())[::-1]
@@ -43,7 +40,7 @@ def oauth_gen(method,url,iparams,headers):
     params['oauth_token']= oauth_token
     params['oauth_signature'] = oauth_sig(method,'http://'+headers['Host'] + url, params)
     headers['Authorization' ] =  'OAuth ' + ',  '.join(['%s="%s"' %(k,v) for k,v in params.iteritems() if 'oauth' in k ])
-    print headers['Authorization']
+
 def postOAuth(url,params={}):
     """
     Does the actual posting. Content-type is set as x-www-form-urlencoded
@@ -63,7 +60,6 @@ def create(blogname,title):
     params['body'] = " ".join(vim.current.buffer)
     params['type'] = "text"
     url = 'http://api.tumblr.com/v2/blog/%s/post' % blogname 
-    print url
     print _resp(postOAuth(url,params),201)
 
 def _resp(resp,code=200):
